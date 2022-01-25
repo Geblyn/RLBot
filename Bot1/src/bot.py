@@ -87,29 +87,5 @@ class MyBot(BaseAgent):
         # Return the controls associated with the beginning of the sequence so we can start right away.
         return self.active_sequence.tick(packet)
 
-from rlbot.agents.base_agent import BaseAgent
-from rlbot.utils.structures.quick_chats import QuickChats
 
-def get_game_score(packet: GameTickPacket):
-    score = [0, 0]
-
-    for car in packet.game_cars:
-        score[car.team] == car.score_info.goals
-
-        return score
-
-class ChatMessage(BaseAgent):
-    def initialize_agent(self):
-        self.previous_frame_score = 0
-
-    def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
-        controller = SimpleControllerState()
-        
-        current_score = get_game_score(packet)
-        if self.previous_frame_score < current_score[self.team]:
-            self.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Custom_Toxic_404NoSkill)
-        
-        self.previous_frame_score = current_score[self.team]
-
-        return controller
         
