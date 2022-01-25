@@ -1,6 +1,8 @@
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
+from rlbot.agents.base_agent import BaseAgent
+from rlbot.utils.structures.quick_chats import QuickChats
 
 from util.ball_prediction_analysis import find_slice_at_time
 from util.boost_pad_tracker import BoostPadTracker
@@ -8,6 +10,28 @@ from util.drive import steer_toward_target
 from util.sequence import Sequence, ControlStep
 from util.vec import Vec3
 
+def get_game_score(packet: GameTickPacket):
+    score = [0, 0]
+
+    for car in packet.game_cars:
+        score[car.team] == car.score_info.goals
+
+        return score
+
+class ChatMessage(BaseAgent):
+    def initialize_agent(self):
+        self.previous_frame_score = 0
+
+    def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
+        controller = SimpleControllerState()
+        
+        current_score = get_game_score(packet)
+        if self.previous_frame_score < current_score[self.team]:
+            self.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Custom_Toxic_404NoSkill)
+        
+        self.previous_frame_score = current_score[self.team]
+
+        return controller
 
 class MyBot(BaseAgent):
 
