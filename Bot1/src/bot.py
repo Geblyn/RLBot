@@ -24,7 +24,6 @@ class MyBot(BaseAgent):
         This function will be called by the framework many times per second. This is where you can
         see the motion of the ball, etc. and return controls to drive your car.
         """
-
         # Keep our boost pad info updated with which pads are currently active
         self.boost_pad_tracker.update_boost_status(packet)
 
@@ -66,7 +65,7 @@ class MyBot(BaseAgent):
 
         controls = SimpleControllerState()
         controls.steer = steer_toward_target(my_car, target_location)
-        controls.throttle = 1.0
+        controls.throttle = 10.0
         # You can set more controls if you want, like controls.boost.
 
         return controls
@@ -84,8 +83,7 @@ class MyBot(BaseAgent):
             ControlStep(duration=0.8, controls=SimpleControllerState()),
         ])
 
+    
+
         # Return the controls associated with the beginning of the sequence so we can start right away.
         return self.active_sequence.tick(packet)
-
-
-        
