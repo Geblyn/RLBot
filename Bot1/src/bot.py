@@ -1,12 +1,21 @@
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
+from rlbot.utils.structures.quick_chats import QuickChats
 
 from util.ball_prediction_analysis import find_slice_at_time
 from util.boost_pad_tracker import BoostPadTracker
 from util.drive import steer_toward_target
 from util.sequence import Sequence, ControlStep
 from util.vec import Vec3
+
+def get_game_score(packet : GameTickPacket):
+        score = [0, 0]
+
+        for car in packet.game_cars:
+            score[car.team] += car.score_info.goals
+        
+        return score
 
 class MyBot(BaseAgent):
 
@@ -18,6 +27,7 @@ class MyBot(BaseAgent):
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
+        self.previous_frame_team_score = 0
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
@@ -68,6 +78,14 @@ class MyBot(BaseAgent):
         controls.throttle = 10.0
         # You can set more controls if you want, like controls.boost.
 
+        controls = SimpleControllerState()
+        
+        current_score = get_game_score(packet)
+        if self.previous_frame_team_score < current_score[self.team]:
+            self.send_quick_chat(QuickChats.CHAT_EVERYONe, QuickChats.Custom_Toxic_404NoSkill)
+
+        self. previous_frame_team_score = current_score[self.team]
+       
         return controls
 
     def begin_front_flip(self, packet):
@@ -87,3 +105,6 @@ class MyBot(BaseAgent):
 
         # Return the controls associated with the beginning of the sequence so we can start right away.
         return self.active_sequence.tick(packet)
+
+    
+
