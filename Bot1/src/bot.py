@@ -9,6 +9,7 @@ from util.drive import steer_toward_target
 from util.sequence import Sequence, ControlStep
 from util.vec import Vec3
 
+# Code needs to be tested, gets variable score (quick chat)
 def get_game_score(packet : GameTickPacket):
         score = [0, 0]
 
@@ -16,7 +17,7 @@ def get_game_score(packet : GameTickPacket):
             score[car.team] += car.score_info.goals
         
         return score
-
+# end of code (quick chat)
 class MyBot(BaseAgent):
 
     def __init__(self, name, team, index):
@@ -78,6 +79,7 @@ class MyBot(BaseAgent):
         controls.throttle = 10.0
         # You can set more controls if you want, like controls.boost.
 
+        # Code needs to be tested, sets score for quick chat (quick chat)
         controls = SimpleControllerState()
         
         current_score = get_game_score(packet)
@@ -87,7 +89,8 @@ class MyBot(BaseAgent):
         self. previous_frame_team_score = current_score[self.team]
        
         return controls
-
+        # end of code that needs to be tested (quick chat)
+    
     def begin_front_flip(self, packet):
         # Send some quickchat just for fun
         self.send_quick_chat(team_only=False, quick_chat=QuickChatSelection.Information_IGotIt)
