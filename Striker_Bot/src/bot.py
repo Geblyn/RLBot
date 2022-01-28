@@ -80,11 +80,9 @@ class MyBot(BaseAgent):
         # You can set more controls if you want, like controls.boost.
 
         # Code needs to be tested, sets score for quick chat (quick chat)
-        controls = SimpleControllerState()
-        
         current_score = get_game_score(packet)
         if self.previous_frame_team_score < current_score[self.team]:
-            self.send_quick_chat(QuickChats.CHAT_EVERYONe, QuickChats.Custom_Toxic_404NoSkill)
+            self.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Custom_Toxic_404NoSkill)
 
         self. previous_frame_team_score = current_score[self.team]
        
