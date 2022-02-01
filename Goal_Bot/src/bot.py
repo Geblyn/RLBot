@@ -2,7 +2,7 @@ from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
 
-from util.ball_prediction_analysis import find_slice_at_time
+from util.ball_prediction_analysis import GOAL_SEARCH_INCREMENT, find_slice_at_time
 from util.boost_pad_tracker import BoostPadTracker
 from util.drive import steer_toward_target
 from util.sequence import Sequence, ControlStep
@@ -19,6 +19,7 @@ class MyBot(BaseAgent):
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
+        print(self.team)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
@@ -36,15 +37,23 @@ class MyBot(BaseAgent):
             if controls is not None:
                 return controls
 
-        # Gather some information about our car and the ball
+        # Gather some information about our car, ball and goal
         my_car = packet.game_cars[self.index]
         car_location = Vec3(my_car.physics.location)
         car_velocity = Vec3(my_car.physics.velocity)
         ball_location = Vec3(packet.game_ball.physics.location)
+        current_team = my_car.team
+        orange_goal_left_target = Vec3(800, 5213, 321.3875)
+        orange_goal_right_target = Vec3(-800, 5213, 321.3875)
+        blue_goal_left_target = Vec3(800, -5213, 321.3875)
+        blue_goal_right_target = Vec3(-800, -5213, 321.3875)
 
+        
         # By default we will chase the ball, but target_location can be changed later
-        target_location = ball_location
-
+        
+        left_target_location = ball_location
+        right_target_location = ball_location
+        
         if car_location.dist(ball_location) > 1500:
             # We're far away from the ball, let's try to lead it a little bit
             ball_prediction = self.get_ball_prediction_struct()  # This can predict bounces, etc
