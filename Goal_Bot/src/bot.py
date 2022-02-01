@@ -19,7 +19,7 @@ class MyBot(BaseAgent):
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
-        print(self.team)
+        print('the team value is' + self.team)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
@@ -43,6 +43,8 @@ class MyBot(BaseAgent):
         car_velocity = Vec3(my_car.physics.velocity)
         ball_location = Vec3(packet.game_ball.physics.location)
         current_team = my_car.team
+        
+        # Blue and Orange team goal posts
         orange_goal_left_target = Vec3(800, 5213, 321.3875)
         orange_goal_right_target = Vec3(-800, 5213, 321.3875)
         blue_goal_left_target = Vec3(800, -5213, 321.3875)
