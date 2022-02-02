@@ -49,12 +49,19 @@ class MyBot(BaseAgent):
         orange_goal_right_target = Vec3(-800, 5213, 321.3875)
         blue_goal_left_target = Vec3(800, -5213, 321.3875)
         blue_goal_right_target = Vec3(-800, -5213, 321.3875)
+        
+        # Test if team is orange
+        if current_team == 1:
+            left_target_location = orange_goal_left_target
+            right_target_location = orange_goal_right_target
+        else:
+            left_target_location = blue_goal_left_target
+            right_target_location = blue_goal_right_target 
 
-        
-        # By default we will chase the ball, but target_location can be changed later
-        
-        left_target_location = ball_location
-        right_target_location = ball_location
+        # Sets up distance from goal posts variables
+        car_to_left_goal =  left_target_location - car_location
+
+        if car_location.dist(left_target_location) > 
         
         if car_location.dist(ball_location) > 1500:
             # We're far away from the ball, let's try to lead it a little bit
