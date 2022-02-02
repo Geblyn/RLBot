@@ -19,7 +19,7 @@ class MyBot(BaseAgent):
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
-        print('the team value is' + self.team)
+        print(self.team)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
