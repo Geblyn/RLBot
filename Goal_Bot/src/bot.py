@@ -1,3 +1,4 @@
+from multiprocessing.connection import wait
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
@@ -64,6 +65,8 @@ class MyBot(BaseAgent):
         if car_location.dist(left_target_location) > 1500:
             controller = SimpleControllerState()
             controller.steer = steer_toward_target(my_car, left_target_location)
+            controller.throttle = 1
+            wait(1)
             controller.throttle = 0
             return controller
         
