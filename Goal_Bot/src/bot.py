@@ -64,7 +64,7 @@ class MyBot(BaseAgent):
         if car_location.dist(left_target_location) > 1500:
             controller = SimpleControllerState()
             controller.steer = steer_toward_target(my_car, left_target_location)
-            controller.throttle = 1.0
+            controller.throttle = 0
             return controller
         
         if car_location.dist(ball_location) > 1500:
@@ -86,13 +86,6 @@ class MyBot(BaseAgent):
         if 750 < car_velocity.length() < 800:
             # We'll do a front flip if the car is moving at a certain speed.
             return self.begin_front_flip(packet)
-
-        controls = SimpleControllerState()
-        controls.steer = steer_toward_target(my_car, target_location)
-        controls.throttle = 1.0
-        # You can set more controls if you want, like controls.boost.
-
-        return controls
 
     def begin_front_flip(self, packet):
         # Send some quickchat just for fun
