@@ -61,7 +61,11 @@ class MyBot(BaseAgent):
         # Sets up distance from goal posts variables
         car_to_left_goal =  left_target_location - car_location
 
-        if car_location.dist(left_target_location) > 
+        if car_location.dist(left_target_location) > 1500:
+            controller = SimpleControllerState()
+            controller.steer = steer_toward_target(my_car, left_target_location)
+            controller.throttle = 1.0
+            return controller
         
         if car_location.dist(ball_location) > 1500:
             # We're far away from the ball, let's try to lead it a little bit
