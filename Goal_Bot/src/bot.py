@@ -87,6 +87,13 @@ class MyBot(BaseAgent):
             # We'll do a front flip if the car is moving at a certain speed.
             return self.begin_front_flip(packet)
 
+        controls = SimpleControllerState()
+        controls.steer = steer_toward_target(my_car, target_location)
+        controls.throttle = 1.0
+        # You can set more controls if you want, like controls.boost.
+
+        return controls
+
     def begin_front_flip(self, packet):
         # Send some quickchat just for fun
         self.send_quick_chat(team_only=False, quick_chat=QuickChatSelection.Information_IGotIt)
