@@ -62,7 +62,7 @@ class MyBot(BaseAgent):
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
             wait(.5)
-            controls.throttle = 0
+            controls.throttle = 0.0
 
         
             
