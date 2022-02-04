@@ -1,4 +1,4 @@
-from multiprocessing.connection import wait
+from time import time
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
@@ -61,7 +61,7 @@ class MyBot(BaseAgent):
             controls = SimpleControllerState()
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
-            wait(.5)
+            time.sleep(.5)
             controls.throttle = 0.0
 
         
