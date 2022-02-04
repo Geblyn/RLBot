@@ -62,14 +62,13 @@ class MyBot(BaseAgent):
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
 
-        if car_location.dist(target_location) == car_location.dist:
+        if car_location.dist(target_location) == car_location:
             controls.throttle = 0
             
            
 
-        controls.steer = steer_toward_target(my_car, target_location)
-        controls.throttle = 1.0
-        # You can set more controls if you want, like controls.boost.
+    
+        
 
         return controls
 
