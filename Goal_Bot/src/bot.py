@@ -20,7 +20,7 @@ class MyBot(BaseAgent):
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
-        print(self.team)
+        
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
@@ -45,70 +45,32 @@ class MyBot(BaseAgent):
         ball_location = Vec3(packet.game_ball.physics.location)
         current_team = my_car.team
         
-        # Blue and Orange team goal posts
-        orange_goal_left_target = Vec3(800, 5213, 321.3875)
-        orange_goal_right_target = Vec3(-800, 5213, 321.3875)
-        blue_goal_left_target = Vec3(800, -5213, 321.3875)
-        blue_goal_right_target = Vec3(-800, -5213, 321.3875)
+        # Blue and Orange team goal targets
+        orange_goal_target = Vec3(0, 5213, 321.3875)
+        blue_goal_target = Vec3(0, -5213, 321.3875)
+    
         
         # Test if team is orange
         if current_team == 1:
-            left_target_location = orange_goal_left_target
-            right_target_location = orange_goal_right_target
+            target_location = orange_goal_target
         else:
-            left_target_location = blue_goal_left_target
-            right_target_location = blue_goal_right_target 
+            target_location = blue_goal_target
+            
 
-        # Sets up distance from goal posts variables
-        car_to_left_goal =  left_target_location - car_location
+        if car_location.dist(target_location) > 1500:
+            controls = SimpleControllerState()
+            controls.steer = steer_toward_target(my_car, target_location)
+            controls.throttle = 1.0
 
-        if car_location.dist(left_target_location) > 1500:
-            controller = SimpleControllerState()
-            controller.steer = steer_toward_target(my_car, left_target_location)
-            controller.throttle = 1
-            wait(1)
-            controller.throttle = 0
-            return controller
-        
-        if car_location.dist(ball_location) > 1500:
-            # We're far away from the ball, let's try to lead it a little bit
-            ball_prediction = self.get_ball_prediction_struct()  # This can predict bounces, etc
-            ball_in_future = find_slice_at_time(ball_prediction, packet.game_info.seconds_elapsed + 2)
+        if car_location.dist(target_location) == car_location.dist:
+            controls.throttle = 0
+            
+           
 
-            # ball_in_future might be None if we don't have an adequate ball prediction right now, like during
-            # replays, so check it to avoid errors.
-            if ball_in_future is not None:
-                target_location = Vec3(ball_in_future.physics.location)
-                self.renderer.draw_line_3d(ball_location, target_location, self.renderer.cyan())
-
-        # Draw some things to help understand what the bot is thinking
-        self.renderer.draw_line_3d(car_location, target_location, self.renderer.white())
-        self.renderer.draw_string_3d(car_location, 1, 1, f'Speed: {car_velocity.length():.1f}', self.renderer.white())
-        self.renderer.draw_rect_3d(target_location, 8, 8, True, self.renderer.cyan(), centered=True)
-
-        if 750 < car_velocity.length() < 800:
-            # We'll do a front flip if the car is moving at a certain speed.
-            return self.begin_front_flip(packet)
-
-        controls = SimpleControllerState()
         controls.steer = steer_toward_target(my_car, target_location)
         controls.throttle = 1.0
         # You can set more controls if you want, like controls.boost.
 
         return controls
 
-    def begin_front_flip(self, packet):
-        # Send some quickchat just for fun
-        self.send_quick_chat(team_only=False, quick_chat=QuickChatSelection.Information_IGotIt)
-
-        # Do a front flip. We will be committed to this for a few seconds and the bot will ignore other
-        # logic during that time because we are setting the active_sequence.
-        self.active_sequence = Sequence([
-            ControlStep(duration=0.05, controls=SimpleControllerState(jump=True)),
-            ControlStep(duration=0.05, controls=SimpleControllerState(jump=False)),
-            ControlStep(duration=0.2, controls=SimpleControllerState(jump=True, pitch=-1)),
-            ControlStep(duration=0.8, controls=SimpleControllerState()),
-        ])
-
-        # Return the controls associated with the beginning of the sequence so we can start right away.
-        return self.active_sequence.tick(packet)
+ 
