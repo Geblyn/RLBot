@@ -61,9 +61,10 @@ class MyBot(BaseAgent):
             controls = SimpleControllerState()
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
-
-        if car_location.dist(target_location) == car_location:
+            wait(.5)
             controls.throttle = 0
+
+        
             
            
 
