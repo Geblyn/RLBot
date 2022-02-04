@@ -17,6 +17,7 @@ class MyBot(BaseAgent):
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
 
+
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
@@ -33,7 +34,9 @@ class MyBot(BaseAgent):
 
         # This is good to keep at the beginning of get_output. It will allow you to continue
         # any sequences that you may have started during a previous call to get_output.
+        
         if self.active_sequence is not None and not self.active_sequence.done:
+            controls = 0
             controls = self.active_sequence.tick(packet)
             if controls is not None:
                 return controls
@@ -62,14 +65,7 @@ class MyBot(BaseAgent):
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
             time.sleep(1)
-            controls.throttle = 0.0
-
-        
-            
-           
-
-    
-        
+            controls.throttle = 0
 
         return controls
 
