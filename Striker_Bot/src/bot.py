@@ -35,6 +35,7 @@ class MyBot(BaseAgent):
         This function will be called by the framework many times per second. This is where you can
         see the motion of the ball, etc. and return controls to drive your car.
         """
+        global controls
         # Keep our boost pad info updated with which pads are currently active
         self.boost_pad_tracker.update_boost_status(packet)
 
@@ -74,9 +75,10 @@ class MyBot(BaseAgent):
             # We'll do a front flip if the car is moving at a certain speed.
             return self.begin_front_flip(packet)
 
-        controls = SimpleControllerState()
-        controls.steer = steer_toward_target(my_car, target_location)
-        controls.throttle = 10.0
+        if car_location.dist(ball_location) > 5120:
+            controls = SimpleControllerState()
+            controls.steer = steer_toward_target(my_car, target_location)
+            controls.throttle = 1.0
         # You can set more controls if you want, like controls.boost.
 
         # Code needs to be tested, sets score for quick chat (quick chat)

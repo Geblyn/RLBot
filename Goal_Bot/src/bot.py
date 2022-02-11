@@ -17,21 +17,24 @@ class MyBot(BaseAgent):
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
 
+
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
         
+
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
         This function will be called by the framework many times per second. This is where you can
         see the motion of the ball, etc. and return controls to drive your car.
         """
-
+        global controls
         # Keep our boost pad info updated with which pads are currently active
         self.boost_pad_tracker.update_boost_status(packet)
 
         # This is good to keep at the beginning of get_output. It will allow you to continue
         # any sequences that you may have started during a previous call to get_output.
+        
         if self.active_sequence is not None and not self.active_sequence.done:
             controls = self.active_sequence.tick(packet)
             if controls is not None:
@@ -45,8 +48,8 @@ class MyBot(BaseAgent):
         current_team = my_car.team
         
         # Blue and Orange team goal targets
-        orange_goal_target = Vec3(0, 5213, 321.3875)
-        blue_goal_target = Vec3(0, -5213, 321.3875)
+        orange_goal_target = Vec3(0, 5000, 321.3875)
+        blue_goal_target = Vec3(0, -5000, 321.3875)
     
         
         # Test if team is orange
@@ -56,13 +59,17 @@ class MyBot(BaseAgent):
             target_location = blue_goal_target
             
 
-        if car_location.dist(target_location) > 1500:
+        if car_location.dist(target_location) > 2500:
             controls = SimpleControllerState()
             controls.steer = steer_toward_target(my_car, target_location)
-            controls.throttle = 1.0
-            time.sleep(30)
+            print("moving")
+            controls.throttle = .5
+            time.sleep(5)
             controls.throttle = 0
+            print("Stopping movement")
 
         return controls
+
+        
 
  
