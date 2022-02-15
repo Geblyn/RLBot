@@ -1,3 +1,4 @@
+import math
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
@@ -24,6 +25,7 @@ class MyBot(BaseAgent):
         super().__init__(name, team, index)
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
+        
 
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
@@ -75,21 +77,20 @@ class MyBot(BaseAgent):
             # We'll do a front flip if the car is moving at a certain speed.
             return self.begin_front_flip(packet)
 
+    
+        # You can set more controls if you want, like controls.boost.
+        
+        controls = SimpleControllerState()
         if car_location.dist(ball_location) > 5120:
-            controls = SimpleControllerState()
             controls.steer = steer_toward_target(my_car, target_location)
             controls.throttle = 1.0
-        # You can set more controls if you want, like controls.boost.
 
-        # Code needs to be tested, sets score for quick chat (quick chat)
         current_score = get_game_score(packet)
+        self. previous_frame_team_score = current_score[self.team]
         if self.previous_frame_team_score < current_score[self.team]:
             self.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Custom_Toxic_404NoSkill)
 
-        self. previous_frame_team_score = current_score[self.team]
-       
         return controls
-        # end of code that needs to be tested (quick chat)
     
     def begin_front_flip(self, packet):
         # Send some quickchat just for fun
@@ -109,5 +110,20 @@ class MyBot(BaseAgent):
         # Return the controls associated with the beginning of the sequence so we can start right away.
         return self.active_sequence.tick(packet)
 
-    
+    def aim(self, target_x, target_y):
+        angle_between_bot_and_target = math.atan2(target_y - self.car_location.y, target_x - self.car_location.x)
+
+        angle_front_to_target = angle_between_bot_and_target - self.car_yaw
+
+        if angle_front_to_target < -math.pi:
+            angle_front_to_target += 2 * math.pi
+        if angle_front_to_target > math.pi:
+            angle_front_to_target -= 2 * math.pi
+
+        if angle_front_to_target < math.radians(-10):
+            self.controls.steer = -1
+        elif angle_front_to_target > math.radians(10):
+            self.controls.steer = 1
+        else:
+            self.controls.steer = 0
 
