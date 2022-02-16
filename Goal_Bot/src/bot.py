@@ -16,7 +16,8 @@ class MyBot(BaseAgent):
         super().__init__(name, team, index)
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
-
+        self.controls = SimpleControllerState()
+       
         self.bot_pos = None
         self.bot_rot = None
 
@@ -38,9 +39,9 @@ class MyBot(BaseAgent):
         # any sequences that you may have started during a previous call to get_output.
         
         if self.active_sequence is not None and not self.active_sequence.done:
-            self.controls = self.active_sequence.tick(packet)
-            if self.controls is not None:
-                return self.controls
+            controls = self.active_sequence.tick(packet)
+            if controls is not None:
+                return controls
 
         # Gather some information about our car, ball and goal
         my_car = packet.game_cars[self.index]
@@ -59,8 +60,7 @@ class MyBot(BaseAgent):
             target_location = orange_goal_target
         else:
             target_location = blue_goal_target
-
-        self.controls = SimpleControllerState()    
+  
 
         if self.car_location.dist(target_location) > 5000:
             self.controls.steer = steer_toward_target(my_car, target_location)
@@ -72,10 +72,10 @@ class MyBot(BaseAgent):
             target_location = ball_location
             self.controls.steer = steer_toward_target(my_car, target_location)
             self.controls.throttle = 1.0
-        else:
+        elif self.car_location.dist(target_location) > 3840:
             target_location = orange_goal_target
             self.controls.steer = steer_toward_target(my_car, target_location)
-            self.controls.throttle = 0
+            
         
         self.aim(target_location.x, target_location.y)
 
