@@ -72,10 +72,10 @@ class MyBot(BaseAgent):
             target_location = ball_location
             self.controls.steer = steer_toward_target(my_car, target_location)
             self.controls.throttle = 1.0
-        elif self.car_location.dist(target_location) > 3840:
+        elif self.car_location.dist(target_location) > 3200:
             target_location = orange_goal_target
             self.controls.steer = steer_toward_target(my_car, target_location)
-            
+            self.controls.throttle = 1.0
         
         self.aim(target_location.x, target_location.y)
 
