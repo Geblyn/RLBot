@@ -1,4 +1,6 @@
 import math
+import time
+from turtle import distance
 from rlbot.agents.base_agent import BaseAgent, SimpleControllerState
 from rlbot.messages.flat.QuickChatSelection import QuickChatSelection
 from rlbot.utils.structures.game_data_struct import GameTickPacket
@@ -17,10 +19,14 @@ class MyBot(BaseAgent):
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
         self.controls = SimpleControllerState()
-       
-        self.bot_pos = None
-        self.bot_rot = None
 
+        #Dodge variables
+        self.should_dodge = False
+        self.on_second_jump = False
+        self.next_dodge_time = 0
+        
+        self.DODGE_TIME = 0.2
+        self.DISTANCE_TO_DODGE = 500
 
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
@@ -48,7 +54,8 @@ class MyBot(BaseAgent):
         self.car_location = Vec3(my_car.physics.location)
         self.car_yaw = my_car.physics.rotation.yaw
         ball_location = Vec3(packet.game_ball.physics.location)
-        current_team = my_car.team
+    
+        
         
         
         # Blue and Orange team goal targets
@@ -56,28 +63,34 @@ class MyBot(BaseAgent):
         blue_goal_target = Vec3(0, -5000, 321.3875)
 
         # Test if team is orange
-        if current_team == 1:
-            target_location = orange_goal_target
+        if self.team == 1:
+            goal_location = orange_goal_target
         else:
-            target_location = blue_goal_target
-  
+            goal_location = blue_goal_target
 
-        if self.car_location.dist(target_location) > 5000:
-            self.controls.steer = steer_toward_target(my_car, target_location)
+        if self.car_location.dist(goal_location) > 5000:
+            self.aim(goal_location.x, goal_location.y)
             self.controls.throttle = 1.0
         else:
             self.controls.throttle = 0
 
-        if ball_location.dist(target_location) < 5000:
-            target_location = ball_location
-            self.controls.steer = steer_toward_target(my_car, target_location)
+        if ball_location.dist(goal_location) < 5000:
+            self.aim(ball_location.x, ball_location.y)
             self.controls.throttle = 1.0
-        elif self.car_location.dist(target_location) > 3200:
-            target_location = orange_goal_target
-            self.controls.steer = steer_toward_target(my_car, target_location)
+            if (self.team == 1 and self.car_location.y > ball_location.y) or (self.team == 0 and self.car_location.y < ball_location.y):
+                self.aim(ball_location.x, ball_location.y)
+                if distance(self.car_location.x, self.car_location.y, ball_location.x, ball_location.y) < self.DISTANCE_TO_DODGE:
+                    self.should_dodge = True
+                else:
+                    self.aim(goal_location.x, goal_location.y)
+
+        elif self.car_location.dist(goal_location) > 3200:
+            self.aim(goal_location.x, goal_location.y)
             self.controls.throttle = 1.0
-        
-        self.aim(target_location.x, target_location.y)
+
+        self.controls.jump = 0
+
+        self.check_for_dodge()
 
         return self.controls
 
@@ -97,6 +110,18 @@ class MyBot(BaseAgent):
             self.controls.steer = 1
         else:
             self.controls.steer = 0
-            
+        
+    def check_for_dodge(self):
+        if self.should_dodge and time.time() > self.next_dodge_time:
+            self.controls.jump = True
+            self.controls.pitch = -1
+
+        if self.on_second_jump:
+            self.on_second_jump = False
+            self.should_dodge = time.time() + self.DODGE_TIME
+
+    def distance(x1, y1, x2, y2):
+        return math.sqrt((x2 -x1)**2 + (y2 - y1)**2)
+   
 
  
