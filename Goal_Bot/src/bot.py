@@ -79,7 +79,7 @@ class MyBot(BaseAgent):
             self.controls.throttle = 1.0
             if (self.team == 1 and self.car_location.y > ball_location.y) or (self.team == 0 and self.car_location.y < ball_location.y):
                 self.aim(ball_location.x, ball_location.y)
-                if distance(self.car_location.x, self.car_location.y, ball_location.x, ball_location.y) < self.DISTANCE_TO_DODGE:
+                if distance(self.car_location, ball_location) < self.DISTANCE_TO_DODGE:
                     self.should_dodge = True
                 else:
                     self.aim(goal_location.x, goal_location.y)
