@@ -19,6 +19,7 @@ def get_game_score(packet : GameTickPacket):
         
         return score
 # end of code (quick chat)
+
 class MyBot(BaseAgent):
 
     def __init__(self, name, team, index):
@@ -32,65 +33,62 @@ class MyBot(BaseAgent):
         self.boost_pad_tracker.initialize_boosts(self.get_field_info())
         self.previous_frame_team_score = 0
 
+    def aim(self, target_x, target_y):
+        angle_between_bot_and_target = math.atan2(target_y - self.car_location.y, target_x - self.car_location.x)
+
+        angle_front_to_target = angle_between_bot_and_target - self.car_yaw
+
+        if angle_front_to_target < -math.pi:
+            angle_front_to_target += 2 * math.pi
+        if angle_front_to_target > math.pi:
+            angle_front_to_target -= 2 * math.pi
+
+        if angle_front_to_target < math.radians(-10):
+            self.controls.steer = -1
+        elif angle_front_to_target > math.radians(10):
+            self.controls.steer = 1
+        else:
+            self.controls.steer = 0
+
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
         This function will be called by the framework many times per second. This is where you can
         see the motion of the ball, etc. and return controls to drive your car.
         """
-        global controls
         # Keep our boost pad info updated with which pads are currently active
         self.boost_pad_tracker.update_boost_status(packet)
 
         # This is good to keep at the beginning of get_output. It will allow you to continue
         # any sequences that you may have started during a previous call to get_output.
         if self.active_sequence is not None and not self.active_sequence.done:
-            controls = self.active_sequence.tick(packet)
-            if controls is not None:
-                return controls
+            self.controls = self.active_sequence.tick(packet)
+            if self.controls is not None:
+                return self.controls
 
         # Gather some information about our car and the ball
         my_car = packet.game_cars[self.index]
-        car_location = Vec3(my_car.physics.location)
+        self.car_location = Vec3(my_car.physics.location)
         car_velocity = Vec3(my_car.physics.velocity)
-        ball_location = Vec3(packet.game_ball.physics.location)
+        self.ball_location = Vec3(packet.game_ball.physics.location)
 
-        # By default we will chase the ball, but target_location can be changed later
-        target_location = ball_location
-
-        if car_location.dist(ball_location) > 1500:
+        self.controls = SimpleControllerState()
+        if self.car_location.dist(self.ball_location) > 1500:
             # We're far away from the ball, let's try to lead it a little bit
             ball_prediction = self.get_ball_prediction_struct()  # This can predict bounces, etc
-            ball_in_future = find_slice_at_time(ball_prediction, packet.game_info.seconds_elapsed + 2)
-
-            # ball_in_future might be None if we don't have an adequate ball prediction right now, like during
-            # replays, so check it to avoid errors.
-            if ball_in_future is not None:
-                target_location = Vec3(ball_in_future.physics.location)
-                self.renderer.draw_line_3d(ball_location, target_location, self.renderer.cyan())
-
-        # Draw some things to help understand what the bot is thinking
-        self.renderer.draw_line_3d(car_location, target_location, self.renderer.white())
-        self.renderer.draw_string_3d(car_location, 1, 1, f'Speed: {car_velocity.length():.1f}', self.renderer.white())
-        self.renderer.draw_rect_3d(target_location, 8, 8, True, self.renderer.cyan(), centered=True)
+            ball_in_future = find_slice_at_time(ball_prediction, packet.game_info.seconds_elapsed + 2) 
+            self.aim(self.ball_location.x, self.ball_location.y)
+            self.controls.throttle = 1.0
 
         if 750 < car_velocity.length() < 800:
             # We'll do a front flip if the car is moving at a certain speed.
             return self.begin_front_flip(packet)
-
-    
-        # You can set more controls if you want, like controls.boost.
-        
-        controls = SimpleControllerState()
-        if car_location.dist(ball_location) > 5120:
-            controls.steer = steer_toward_target(my_car, target_location)
-            controls.throttle = 1.0
 
         current_score = get_game_score(packet)
         self. previous_frame_team_score = current_score[self.team]
         if self.previous_frame_team_score < current_score[self.team]:
             self.send_quick_chat(QuickChats.CHAT_EVERYONE, QuickChats.Custom_Toxic_404NoSkill)
 
-        return controls
+        return self.controls
     
     def begin_front_flip(self, packet):
         # Send some quickchat just for fun
@@ -110,20 +108,5 @@ class MyBot(BaseAgent):
         # Return the controls associated with the beginning of the sequence so we can start right away.
         return self.active_sequence.tick(packet)
 
-    def aim(self, target_x, target_y):
-        angle_between_bot_and_target = math.atan2(target_y - self.car_location.y, target_x - self.car_location.x)
 
-        angle_front_to_target = angle_between_bot_and_target - self.car_yaw
-
-        if angle_front_to_target < -math.pi:
-            angle_front_to_target += 2 * math.pi
-        if angle_front_to_target > math.pi:
-            angle_front_to_target -= 2 * math.pi
-
-        if angle_front_to_target < math.radians(-10):
-            self.controls.steer = -1
-        elif angle_front_to_target > math.radians(10):
-            self.controls.steer = 1
-        else:
-            self.controls.steer = 0
 
