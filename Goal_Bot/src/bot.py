@@ -28,6 +28,7 @@ class MyBot(BaseAgent):
         
         self.DODGE_TIME = 0.2
         self.DISTANCE_TO_DODGE = 500
+        self.DISTANCE_TO_GOAL_TO_BOOST = 3200
 
     def initialize_agent(self):
         # Set up information about the boost pads now that the game is active and the info is available
@@ -58,7 +59,10 @@ class MyBot(BaseAgent):
 
         if self.on_second_jump:
             self.on_second_jump = False
-            self.should_dodge = time.time() + self.DODGE_TIME
+            self.should_dodge = False
+        else:
+            self.on_second_jump = True
+            self.next_dodge_time =  time.time() + self.DODGE_TIME
 
     def Distance(self, x1, y1, x2, y2):
         return math.sqrt((x2 -x1)**2 + (y2 - y1)**2)
@@ -98,24 +102,17 @@ class MyBot(BaseAgent):
             self.controls.throttle = 0
 
         if ball_location.dist(goal_location) < 5000:
-            self.aim(ball_location.x, ball_location.y)
-            self.controls.throttle = 1.0
             if (self.team == 1 and self.car_location.y > ball_location.y) or (self.team == 0 and self.car_location.y < ball_location.y):
                 self.aim(ball_location.x, ball_location.y)
-                if self.Distance(self.car_location.x, self.car_location.y, ball_location.x, ball_location.y):
-                    self.should_dodge = True
-                else:
-                    self.aim(goal_location.x, goal_location.y)
-
+                self.controls.throttle = 1.0
+            else:
+                self.aim(goal_location.x, goal_location.y)
+                self.controls.throttle = 1.0          
         elif self.car_location.dist(goal_location) > 3200:
             self.aim(goal_location.x, goal_location.y)
             self.controls.throttle = 1.0
-            if ball_location.dist(goal_location) < 2000:
-                self.controls.boost
 
         self.controls.jump = 0
-
-        self.check_for_dodge()
 
         return self.controls
 
