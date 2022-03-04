@@ -113,10 +113,10 @@ class MyBot(BaseAgent):
         
         if (self.team == 0 and self.car_location.y < self.ball_location.y) or (self.team == 1 and self.car_location.y > self.ball_location.y):
             if self.ball_location.dist(goal_location) > 5000:
-                if self.car_location.dist(self.ball_location) < 500:
+                if self.car_location.dist(self.ball_location) < 350:
                     self.should_flip = True
             elif self.ball_location.dist(goal_location) < 2500:
-                if self.car_location.dist(self.ball_location) < 500:
+                if self.car_location.dist(self.ball_location) < 350:
                     self.should_flip = True
         else:
             if self.team == 0:
