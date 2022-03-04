@@ -27,12 +27,14 @@ class MyBot(BaseAgent):
         super().__init__(name, team, index)
         self.active_sequence: Sequence = None
         self.boost_pad_tracker = BoostPadTracker()
-        self.DISTANCE_TO_BOOST = 1500
+        self.DISTANCE_TO_BOOST = 3000
         self.DODGE_TIME = .2
+        self.POWERSLIDE_ANGLE = 3
 
         self.should_flip = False
         self.on_second_jump = False
-        self.next_dodge_time = 0
+        self.next_dodge_time = 3
+        
         
 
     def initialize_agent(self):
@@ -69,14 +71,14 @@ class MyBot(BaseAgent):
                 self.on_second_jump = True
                 self.next_dodge_time = time.time() + self.DODGE_TIME
 
+    def Distance(self, x1, y1, x2, y2):
+        return math.sqrt((x2 -x1)**2 + (y2 - y1)**2)
 
     def get_output(self, packet: GameTickPacket) -> SimpleControllerState:
         """
         This function will be called by the framework many times per second. This is where you can
         see the motion of the ball, etc. and return controls to drive your car.
         """
-        # Keep our boost pad info updated with which pads are currently active
-        self.boost_pad_tracker.update_boost_status(packet)
 
         # This is good to keep at the beginning of get_output. It will allow you to continue
         # any sequences that you may have started during a previous call to get_output.
@@ -103,8 +105,9 @@ class MyBot(BaseAgent):
         
         self.controls.boost = self.car_location.dist(self.ball_location) > self.DISTANCE_TO_BOOST
         
-        if self.car_location.dist(self.ball_location) > 1000:
+        if self.Distance(self.car_location.x, self.car_location.y, self.ball_location.x, self.ball_location.y) > 1000:
             self.aim(self.ball_location.x, self.ball_location.y)
+            self.controls.throttle = 1.0
         
 
         if self.ball_location.x == 0 and self.ball_location.y == 0:
@@ -112,17 +115,15 @@ class MyBot(BaseAgent):
             self.controls.boost = True
         
         if (self.team == 0 and self.car_location.y < self.ball_location.y) or (self.team == 1 and self.car_location.y > self.ball_location.y):
-            if self.ball_location.dist(goal_location) > 5000:
-                if self.car_location.dist(self.ball_location) < 350:
-                    self.should_flip = True
-            elif self.ball_location.dist(goal_location) < 2500:
-                if self.car_location.dist(self.ball_location) < 350:
+                if self.Distance(self.car_location.x, self.car_location.y, self.ball_location.x, self.ball_location.y) < 350:
+                    self.aim(self.ball_location.x, self.ball_location.y)
+                    self.controls.throttle = 1.0
                     self.should_flip = True
         else:
             if self.team == 0:
-                self.aim(0, -3500)
+                self.aim(2000, -2000)
             else:
-                self.aim(0, 3500)
+                self.aim(-2000, 2000)
 
         if self.ball_location.dist(enemy_goal) < 1000:
             self.aim(self.ball_location.x, self.ball_location.y)

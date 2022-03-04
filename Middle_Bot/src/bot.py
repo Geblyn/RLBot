@@ -32,7 +32,7 @@ class MyBot(BaseAgent):
 
         self.should_flip = False
         self.on_second_jump = False
-        self.next_dodge_time = 10
+        self.next_dodge_time = 5
         
 
     def initialize_agent(self):
@@ -118,9 +118,8 @@ class MyBot(BaseAgent):
         if (self.team == 0 and self.car_location.y < self.ball_location.y) or (self.team == 1 and self.car_location.y > self.ball_location.y):
             if self.ball_location.dist(goal_location) > 5000:
                 if self.car_location.dist(self.ball_location) < 350:
-                    self.should_flip = True
-            elif self.ball_location.dist(goal_location) < 2500:
-                if self.car_location.dist(self.ball_location) < 350:
+                    self.aim(self.ball_location.x, self.ball_location.y)
+                    self.controls.throttle = 1.0
                     self.should_flip = True
         else:
                 self.aim(0,0)
