@@ -115,6 +115,7 @@ class MyBot(BaseAgent):
             self.controls.boost = True
         
         if (self.team == 0 and self.car_location.y < self.ball_location.y) or (self.team == 1 and self.car_location.y > self.ball_location.y):
+            if self.ball_location.dist(goal_location) > 5000:
                 if self.Distance(self.car_location.x, self.car_location.y, self.ball_location.x, self.ball_location.y) < 350:
                     self.aim(self.ball_location.x, self.ball_location.y)
                     self.controls.throttle = 1.0
